@@ -1,0 +1,57 @@
+# joint_limits.yaml — MoveIt's view of the gripper's limits.
+#
+# ⚠⚠ The velocity limit here MUST match what the driver can actually do. This is
+#     the single most dangerous number in the package, and it is not obvious why.
+#
+# The earlier failure it prevents: with velocity set far too high (the URDF's
+# placeholder 0.2 m/s, against a real ceiling near 0.028 m/s), MoveIt plans a
+# gripper motion whose duration is an order of magnitude shorter than reality.
+# move_group then allows a controller execution time of roughly
+# `duration * allowed_goal_duration_margin + allowed_start_tolerance`, and the
+# real controller — correctly rate limited by the SDK — is still moving when
+# that expires, so the goal is killed with
+# "Controller is taking too long to execute trajectory". Nothing is wrong with
+# the hardware or the controller; the plan simply lied about how long it takes.
+#
+#   Do NOT fix that by raising allowed_goal_duration_margin: that weakens the
+#   safety net for every controller in the stack.
+#
+# ── Derivation ───────────────────────────────────────────────────────────────
+# The SDK's command-trajectory ceiling is `max_velocity_rad_s`, in MOTOR radians
+# per second (see litegrip.ros2_control.xacro). The master joint's value is the
+# opening in metres, and the conversion is
+#
+#     opening_rate [m/s] = max_velocity_rad_s [rad/s] * rad_to_mm [mm/rad] / 1000
+#
+# With the shipped defaults (0.436 rad/s, 65.0231 mm/rad):
+#
+#     0.436 * 65.0231 / 1000 = 0.0283500716 m/s
+#
+# and that is the value below, rounded DOWN at the 6th decimal so the plan can
+# never claim to move faster than the driver permits.
+#
+# test/test_config_consistency.cpp recomputes this from the two source files and
+# fails if they drift apart, so changing either the xacro default or this number
+# alone turns the suite red.
+joint_limits:
+  gripper_opening_joint:
+    has_velocity_limits: true
+    max_velocity: 0.028350
+
+    # The SDK limits the TARGET's rate, not its acceleration, so this is not
+    # derived from anything: it is a planning-side smoothing choice, kept low
+    # because a gripper moves a few centimetres. Setting it too high makes
+    # trajectories that the rate limiter then flattens anyway.
+    has_acceleration_limits: true
+    max_acceleration: 0.2
+
+    has_position_limits: true
+    min_position: 0.0
+    max_position: 0.087
+
+    # ★ No effort limit on purpose. The joint is a virtual prismatic joint, and
+    #   there is no defensible way to turn the motor's N.m torque budget into a
+    #   linear force at it without a transmission model. The real torque budget
+    #   is enforced inside the SDK in N.m (torque_limit_nm), where it belongs;
+    #   inventing a number here would only look like protection.
+    has_effort_limits: false

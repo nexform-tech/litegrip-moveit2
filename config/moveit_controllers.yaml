@@ -1,0 +1,36 @@
+# moveit_controllers.yaml — how MoveIt drives the gripper.
+#
+# The gripper is driven by a GripperCommand action, not a trajectory controller.
+# That is deliberate and it is the whole reason this robot needs no custom
+# MoveIt-side action server:
+#
+#   · A gripper's normal ending is "close until contact and stop". Under a
+#     JointTrajectoryController that ending had to be rescued with
+#     goal_time: 0.0 — switching off timeout judgement for everything — whereas
+#     control_msgs/action/GripperCommand carries `stalled` and `reached_goal`
+#     and says the same thing directly.
+#   · It also removes the class of failure where a short gripper trajectory made
+#     move_group kill the goal for exceeding the controller's allowed duration.
+#
+# On the ros2_control side, `position_controllers/GripperActionController` named
+# `gripper_controller` serves exactly this action (see
+# litegrip_ros2_control/config/litegrip_controllers.yaml).
+
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
+
+moveit_simple_controller_manager:
+  controller_names:
+    - gripper_controller
+
+  gripper_controller:
+    type: GripperCommand
+    # ⚠ MoveIt builds the action name as "<controller name>/<action_ns>", and
+    #   ros2_control's GripperActionController serves a private "~/gripper_cmd".
+    #   So the name below is NOT the full action name — MoveIt prefixes it with
+    #   `gripper_controller`, giving /gripper_controller/gripper_cmd.
+    action_ns: gripper_cmd
+    # Which controller the *default* controller manager should pick for the
+    # group. Only one controller exists here.
+    default: true
+    joints:
+      - gripper_opening_joint

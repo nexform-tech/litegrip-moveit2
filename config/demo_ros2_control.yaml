@@ -1,0 +1,17 @@
+# demo_ros2_control.yaml — controller declarations the STANDALONE demo needs.
+#
+# This file is only loaded by litegrip_moveit_config's demo launch. It is
+# deliberately not part of litegrip_ros2_control/config/litegrip_controllers.yaml:
+# when the gripper shares the arm's controller_manager, the joint state
+# broadcaster is already declared by the arm's own params file, and declaring it
+# twice would be two owners of one declaration for no benefit.
+#
+# ⚠ ros2_control 2.54 requires the `type` to be declared: the spawner no longer
+#   infers it from the controller name, and without this the spawner fails with
+#   "The 'type' param was not defined for 'joint_state_broadcaster'". The
+#   symptom is silent in a way that matters — the controller never activates, so
+#   /joint_states never publishes, and MoveIt then has no robot state at all.
+controller_manager:
+  ros__parameters:
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster

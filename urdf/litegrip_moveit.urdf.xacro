@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!--
+  litegrip_moveit.urdf.xacro — the MoveIt-facing robot description.
+
+  It composes two packages, and deliberately has no geometry of its own:
+
+    · litegrip_urdf (the description package) — links, joints, the two mimic
+      fingers. Its own mock <ros2_control> block is switched OFF here, because
+      this file includes the real hardware component below and two blocks
+      declaring the same joint would make ros2_control refuse to load.
+    · litegrip_ros2_control — the real hardware component, backed by the C++ SDK.
+
+  Usage:
+      xacro litegrip_moveit.urdf.xacro dry_run:=true > robot.urdf
+
+  Why a composition file rather than an include inside the description package:
+  a description package should not have to depend on a particular hardware
+  plugin, and this way the choice of hardware backend is made in one place, by
+  the layer that knows which stack is being brought up.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="litegrip">
+
+  <!-- ── geometry, joints and mimic fingers ─────────────────────────────── -->
+  <!-- The mock block must be off: see the note above. -->
+  <xacro:arg name="include_mock_ros2_control" default="false"/>
+  <xacro:include filename="$(find litegrip_urdf)/urdf/litegrip_urdf.urdf.xacro"/>
+
+  <!-- ── the real hardware component ────────────────────────────────────── -->
+  <!-- Every deployment parameter (channel, the dual switch, the rate ceiling,
+       the torque budget, the safety baseline, the calibration) is passed
+       through from this file's arguments, so a launch file only has to touch
+       the ones it cares about. -->
+  <xacro:include filename="$(find litegrip_ros2_control)/urdf/litegrip.ros2_control.xacro"/>
+
+</robot>

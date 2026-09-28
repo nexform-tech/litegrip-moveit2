@@ -1,0 +1,13 @@
+# kinematics.yaml — deliberately empty of any solver.
+#
+# The `gripper` group is a single prismatic joint. Every interaction with it is
+# JOINT-SPACE: the named states in the SRDF, and the GripperCommand action, which
+# carries an opening in metres rather than a pose. No inverse kinematics is ever
+# requested, and configuring a solver (KDL, for instance) would mean asking a
+# 6-DOF-oriented plugin to solve a 1-DOF chain — a load-time failure risk for no
+# benefit.
+#
+# If the gripper is ever attached to an arm and its group has to answer POSE
+# goals, add a solver here. For that case the group must span the arm too, since
+# a lone gripper joint cannot satisfy a pose request on its own.
+{}

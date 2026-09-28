@@ -1,0 +1,23 @@
+# ompl_planning.yaml — the planner configuration for the gripper group.
+#
+# A LiteGrip is one prismatic degree of freedom, so "planning" for it is a
+# straight line and essentially any planner solves it. The real path for this
+# group is the GripperCommand action (see moveit_controllers.yaml), which does
+# not plan at all — it commands an opening directly.
+#
+# OMPL is still configured because move_group requires a planner for every
+# group, and because it keeps the package usable if the gripper is ever planned
+# as part of a larger robot.
+
+planner_configs:
+  RRTConnect:
+    type: geometric::RRTConnect
+    range: 0.0
+
+gripper:
+  default_planner_config: RRTConnect
+  planner_configs:
+    - RRTConnect
+  # Time is not the limiting factor for a one-joint group; keep it short so a
+  # failed plan reports quickly.
+  longest_valid_segment_fraction: 0.005
