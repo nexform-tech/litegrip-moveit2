@@ -4,7 +4,7 @@ MoveIt 2 configuration for the **LiteGrip** adaptive two-finger gripper.
 
 This is the top layer of the litegrip stack:
 
-```
+```text
 litegrip_cpp (C++ SDK)  ->  litegrip_ros2_control  ->  litegrip_moveit_config
 ```
 
@@ -90,7 +90,7 @@ initialises, and `/compute_ik` solves a pose 2 cm along the opening axis to
 `config/joint_limits.yaml`'s `max_velocity` must not exceed what the driver can
 actually do:
 
-```
+```text
 opening rate [m/s] = max_velocity_rad_s [rad/s] * rad_to_mm [mm/rad] / 1000
 ```
 
@@ -132,4 +132,5 @@ colcon test  --packages-select litegrip_moveit_config
 
 ## License
 
-BSD-3-Clause.
+Copyright © 2026 NEXFORM ROBOTICS. Licensed under the
+[Apache License 2.0](LICENSE).

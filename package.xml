@@ -15,8 +15,10 @@
     trajectory controller, which is what a gripper's "close until contact and
     stop" semantics actually want.
   </description>
-  <maintainer email="TODO@email.com">TODO</maintainer>
-  <license>BSD-3-Clause</license>
+  <maintainer email="TODO@example.com">LiteGrip</maintainer>
+  <!-- ⚠ 许可证尚未确定。ROS 2 要求至少一个 license 标签，否则 colcon 拒包，
+       故此处以 TODO 占位，不作为任何法律声明。选定后请替换。 -->
+  <license>TODO</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
