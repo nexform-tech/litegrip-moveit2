@@ -1,0 +1,79 @@
+name: CI
+
+# Test gate for this repository. Releases live in their own workflow (see
+# .github/workflows/release.yml).
+#
+# This runs everything the package can be checked for on its own: XML
+# well-formedness, launch files compiling, the SRDF expanding, and the
+# repository standards holding. Two further checks need the sibling packages
+# and are not wired up yet -- expanding urdf/litegrip_moveit.urdf.xacro, which
+# composes litegrip_urdf with litegrip_ros2_control, and the
+# test_config_consistency gtest, which reads their installed share
+# directories. They are named here rather than left out, so that the gap is
+# visible and does not read as coverage.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true # a superseded pull request run is pointless
+
+jobs:
+  # The job must be named `test`: that is the required status check.
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y liburdfdom-tools libxml2-utils
+          python3 -m pip install --upgrade pip xacro
+
+      - name: Validate XML and launch files
+        run: |
+          set -euo pipefail
+          shopt -s nullglob globstar
+          for f in **/package.xml; do
+            echo "xmllint $f"
+            xmllint --noout "$f"
+          done
+          for f in **/*.launch.py; do
+            echo "py_compile $f"
+            python3 -m py_compile "$f"
+          done
+
+      - name: Expand the SRDF
+        run: |
+          set -euo pipefail
+          shopt -s nullglob globstar
+          for f in **/*.srdf.xacro; do
+            echo "xacro $f"
+            xacro "$f" > /dev/null
+          done
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Lint Markdown
+        run: npx --yes markdownlint-cli2@0.23.3 "README.md"
+
+      - name: Validate repository standards
+        run: |
+          set -euo pipefail
+          test -s README.md
+          test -s AGENTS.md
+          test -s LICENSE
+          python3 -c "import json; json.load(open('.releaserc.json'))"
+          python3 -c "import json; json.load(open('.markdownlint.json'))"
+          echo "repository standards OK"

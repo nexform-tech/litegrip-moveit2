@@ -1,0 +1,23 @@
+# ── colcon build artifacts ────────────────────────────────────────────────
+# A pure description package produces none of these inside its own directory;
+# they are listed so the repository stays clean if it is built in place or
+# cloned directly instead of being symlinked into a workspace's src/.
+build/
+install/
+log/
+
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ── ROS runtime artifacts ─────────────────────────────────────────────────
+.ros/
+
+# ── Editors and OS ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
