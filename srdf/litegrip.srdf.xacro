@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!--
+  litegrip.srdf.xacro — the semantic description (SRDF) for the LiteGrip gripper.
+
+  It is generated into config/litegrip.srdf at build time; this file is the
+  source of truth.
+
+  A note on the shape of this robot: a LiteGrip is a single-transmission
+  gripper. There is one real degree of freedom, the master `gripper_opening_joint`
+  (a prismatic joint whose value is the gap between the finger faces), and the
+  two fingers are its <mimic> — they cannot move independently and therefore must
+  NOT appear in the planning group. Planning the master joint moves both fingers.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="litegrip">
+
+  <!-- Finger travel for one finger, m; the master joint spans twice this. -->
+  <xacro:arg name="stroke" default="0.0435"/>
+  <xacro:property name="stroke_arg" value="$(arg stroke)"/>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       Planning groups
+       ══════════════════════════════════════════════════════════════════════ -->
+  <!-- The gripper has exactly one degree of freedom. The fingers are mimic and
+       are intentionally absent. -->
+  <group name="gripper">
+    <joint name="gripper_opening_joint"/>
+  </group>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       Named states — the two ends of the travel
+       ══════════════════════════════════════════════════════════════════════ -->
+  <!-- Values are the master joint's opening, i.e. the gap between the finger
+       faces in metres: 0 = fully closed, 2*stroke = fully open. -->
+  <group_state name="closed" group="gripper">
+    <joint name="gripper_opening_joint" value="0"/>
+  </group_state>
+  <group_state name="open" group="gripper">
+    <joint name="gripper_opening_joint" value="${2.0 * float(stroke_arg)}"/>
+  </group_state>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       Collision exclusions
+       ══════════════════════════════════════════════════════════════════════
+       Reasons:
+         Adjacent  the two links are joined by a joint, so they are always in
+                   contact by construction
+         Never     the pair is geometrically unable to collide (this is a
+                   gripper whose fingers slide on rails)
+         Default   the pair is checked
+
+       The finger/finger pair is disabled on purpose: at the "closed" named
+       state the two faces meet, which is the mechanism's intended end stop and
+       not a collision to avoid. Leaving it checked would make the very state we
+       want to command unplannable. -->
+  <disable_collisions link1="gripper_slider_link1" link2="base_link" reason="Adjacent"/>
+  <disable_collisions link1="gripper_slider_link2" link2="base_link" reason="Adjacent"/>
+  <disable_collisions link1="gripper_slider_link1" link2="gripper_slider_link2" reason="Never"/>
+  <disable_collisions link1="gripper_slider_link1" link2="gripper_opening_link" reason="Never"/>
+  <disable_collisions link1="gripper_slider_link2" link2="gripper_opening_link" reason="Never"/>
+  <disable_collisions link1="base_link" link2="gripper_opening_link" reason="Adjacent"/>
+  <disable_collisions link1="base_link" link2="base_footprint" reason="Adjacent"/>
+  <disable_collisions link1="gripper_opening_link" link2="base_footprint" reason="Never"/>
+
+</robot>
