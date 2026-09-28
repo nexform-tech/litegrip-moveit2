@@ -1,14 +1,45 @@
 # ompl_planning.yaml — the planner configuration for the gripper group.
 #
-# A LiteGrip is one prismatic degree of freedom, so "planning" for it is a
-# straight line and essentially any planner solves it. The real path for this
-# group is the GripperCommand action (see moveit_controllers.yaml), which does
-# not plan at all — it commands an opening directly.
+# ⚠⚠ Do NOT delete `planning_plugin` or `request_adapters`, even though this
+#     group is trivial and "obviously" needs no tuning. They are not tuning.
 #
-# OMPL is still configured because move_group requires a planner for every
-# group, and because it keeps the package usable if the gripper is ever planned
-# as part of a larger robot.
+# What happens without them, measured on this stack: MoveIt's PlanningPipeline
+# has a legacy fallback when `planning_plugin` is unset — it enumerates the
+# pluginlib plugins it can find and picks one, logging only
+#
+#     "No '~planning_plugin' parameter specified, but only '%s' planning plugin
+#      is available. Using that one."
+#
+# In this installation that resolved to CHOMP. CHOMP then segfaulted inside
+# ChompOptimizer::initialize() on a one-degree-of-freedom group, taking
+# move_group down with it (exit code -11) the moment a goal was sent. The
+# symptom — "the gripper reports state fine but move_group crashes when I send a
+# command" — looks nothing like a missing parameter, and nothing points at this
+# file.
+#
+# So: name the plugin explicitly. The values below mirror MoveIt's own
+# default_configs/ompl_planning.yaml, which is what a generated config ships.
 
+planning_plugin: ompl_interface/OMPLPlanner
+start_state_max_bounds_error: 0.1
+jiggle_fraction: 0.05
+request_adapters: >-
+  default_planner_request_adapters/AddTimeOptimalParameterization
+  default_planner_request_adapters/ResolveConstraintFrames
+  default_planner_request_adapters/FixWorkspaceBounds
+  default_planner_request_adapters/FixStartStateBounds
+  default_planner_request_adapters/FixStartStateCollision
+  default_planner_request_adapters/FixStartStatePathConstraints
+
+# ── planners ────────────────────────────────────────────────────────────────
+# A LiteGrip is one prismatic degree of freedom, so planning is a straight line
+# and essentially any planner solves it. The real path for this group is the
+# GripperCommand action (see moveit_controllers.yaml), which does not plan at
+# all — it commands an opening directly.
+#
+# OMPL is configured because move_group requires a planner for every group, and
+# so the package stays usable if the gripper is ever planned as part of a larger
+# robot.
 planner_configs:
   RRTConnect:
     type: geometric::RRTConnect
@@ -18,6 +49,6 @@ gripper:
   default_planner_config: RRTConnect
   planner_configs:
     - RRTConnect
-  # Time is not the limiting factor for a one-joint group; keep it short so a
-  # failed plan reports quickly.
+  # Time is not the limiting factor for a one-joint group; keep the search fine
+  # so a failed plan reports quickly instead of wandering.
   longest_valid_segment_fraction: 0.005

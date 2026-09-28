@@ -162,6 +162,30 @@ TEST(ConfigConsistency, PlanningGroupHoldsOnlyTheMasterJoint) {
       << "the mimic finger joints must not be in the group";
 }
 
+/// The OMPL pipeline must NAME its plugin.
+///
+/// Without `planning_plugin`, MoveIt's PlanningPipeline falls back to picking an
+/// arbitrary pluginlib planning plugin it can find. On this installation that
+/// resolved to CHOMP, which segfaults on a 1-DOF group and took move_group down
+/// the moment a goal was sent. Nothing in that symptom points back to a missing
+/// YAML key, so it is pinned here.
+TEST(ConfigConsistency, OmplPipelineNamesItsPlugin) {
+  const std::string moveit_share =
+      ament_index_cpp::get_package_share_directory("litegrip_moveit_config");
+  const std::string ompl =
+      read_file(moveit_share + "/config/ompl_planning.yaml");
+
+  EXPECT_NE(ompl.find("planning_plugin:"), std::string::npos)
+      << "ompl_planning.yaml must name planning_plugin; without it MoveIt picks "
+         "an arbitrary available planner (measured: CHOMP, which crashes on "
+         "this 1-DOF group)";
+  EXPECT_NE(ompl.find("ompl_interface/OMPLPlanner"), std::string::npos)
+      << "planning_plugin must be the OMPL plugin";
+  EXPECT_NE(ompl.find("request_adapters:"), std::string::npos)
+      << "ompl_planning.yaml must declare request_adapters, as MoveIt's own "
+         "default config does";
+}
+
 /// Both ends of the travel must be named states, so they can be commanded by
 /// name without anyone hard-coding a number.
 TEST(ConfigConsistency, NamedStatesCoverBothEndsOfTravel) {
