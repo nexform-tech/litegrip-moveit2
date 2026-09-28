@@ -71,7 +71,7 @@ def generate_launch_description() -> LaunchDescription:
                         "command rate ceiling; on the real path you must "
                         "calibrate it"),
         DeclareLaunchArgument(
-            "max_velocity_rad_s", default_value="0.436",
+            "max_velocity_rad_s", default_value="1.5",
             description="command trajectory rate ceiling (rad/s); may only be "
                         "lowered below the SDK's own ceiling"),
         DeclareLaunchArgument(

@@ -23,12 +23,17 @@
 #
 #     opening_rate [m/s] = max_velocity_rad_s [rad/s] * rad_to_mm [mm/rad] / 1000
 #
-# With the shipped defaults (0.436 rad/s, 65.0231 mm/rad):
+# With the current defaults (1.5 rad/s, 65.0231 mm/rad):
 #
-#     0.436 * 65.0231 / 1000 = 0.0283500716 m/s
+#     1.5 * 65.0231 / 1000 = 0.0975346500 m/s
 #
 # and that is the value below, rounded DOWN at the 6th decimal so the plan can
 # never claim to move faster than the driver permits.
+#
+# ⚠ 1.5 rad/s is the SDK's hard ceiling, raised from 0.436 on request rather
+#   than re-derived; the SDK header records the stopping-distance assumptions
+#   that had to be relaxed to admit it. If the ceiling changes there, this number
+#   changes with it — see the coupling test.
 #
 # test/test_config_consistency.cpp recomputes this from the two source files and
 # fails if they drift apart, so changing either the xacro default or this number
@@ -36,14 +41,14 @@
 joint_limits:
   gripper_opening_joint:
     has_velocity_limits: true
-    max_velocity: 0.028350
+    max_velocity: 0.097534
 
     # The SDK limits the TARGET's rate, not its acceleration, so this is not
-    # derived from anything: it is a planning-side smoothing choice, kept low
-    # because a gripper moves a few centimetres. Setting it too high makes
-    # trajectories that the rate limiter then flattens anyway.
+    # derived from anything: it is a planning-side smoothing choice. Raised from
+    # 0.2 alongside the velocity so a full-speed move does not spend most of its
+    # length ramping.
     has_acceleration_limits: true
-    max_acceleration: 0.2
+    max_acceleration: 0.5
 
     has_position_limits: true
     min_position: 0.0
