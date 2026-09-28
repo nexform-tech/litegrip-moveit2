@@ -21,7 +21,7 @@ whole stack up **including ros2_control**.
 | `config/joint_limits.yaml` | ⚠ see "velocity coupling" below |
 | `config/moveit_controllers.yaml` | drives the gripper through a GripperCommand action |
 | `config/ompl_planning.yaml` | planner settings for the group |
-| `config/kinematics.yaml` | intentionally empty — the group is joint-space only |
+| `config/kinematics.yaml` | an IK solver for the group — needed so RViz can create a draggable marker (see below) |
 | `launch/demo.launch.py` | the whole stack: controller_manager, controllers, move_group, RViz |
 | `rviz/litegrip_moveit.rviz` | MotionPlanning display |
 
@@ -55,6 +55,35 @@ velocity bound, and without one there is nothing to argue from.
 measurement, not your gripper's. A unit whose calibration puts its closed end
 outside those lines will — correctly — be refused all motion until the lines are
 re-derived. See the SDK's README.
+
+## Driving the gripper from RViz
+
+In the **MotionPlanning** panel the planning group is `gripper`. Three ways to
+move the gripper, in increasing order of how well they suit a gripper:
+
+| | |
+|---|---|
+| **Drag the interactive marker** | works, and is what `config/kinematics.yaml` exists for — but only the component along the opening axis is solvable, since a 1-DOF chain cannot satisfy an arbitrary 6-DOF pose. Dragging sideways will fail to find an IK solution, which is expected |
+| **Joints tab** | a slider for `gripper_opening_joint`; exact and always solvable |
+| **Plan / Execute with a named state** | `open` (0.087 m) and `closed` (0.0 m), the two ends of travel |
+
+Two configuration details both have to be right for any of this to appear, and
+both fail *silently*:
+
+- **`config/kinematics.yaml` must define a solver for the group.** MoveIt's
+  MotionPlanning display only creates a draggable marker for a group that has
+  one — the drag becomes a pose, and without a solver there is nothing to turn
+  the pose into a joint value, so no marker is created at all. The group still
+  shows up in the panel; it just cannot be dragged.
+- **`rviz2` must be given `robot_description_semantic`, not only
+  `robot_description`.** The panel runs its own planning scene monitor inside
+  the rviz node and reads the SRDF from *that* node's parameters to populate the
+  planning-group list. Given only the URDF, the group list is empty. The demo
+  launch passes `moveit_config.to_dict()` for exactly this reason.
+
+Verified: the panel reports `group gripper`, the interactive marker display
+initialises, and `/compute_ik` solves a pose 2 cm along the opening axis to
+`gripper_opening_joint = 0.02` with `error_code = 1 (SUCCESS)`.
 
 ## The velocity coupling (read this before changing either number)
 

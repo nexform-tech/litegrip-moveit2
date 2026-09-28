@@ -1,13 +1,28 @@
-# kinematics.yaml — deliberately empty of any solver.
+# kinematics.yaml — an IK solver for the `gripper` group, so RViz can drive it.
 #
-# The `gripper` group is a single prismatic joint. Every interaction with it is
-# JOINT-SPACE: the named states in the SRDF, and the GripperCommand action, which
-# carries an opening in metres rather than a pose. No inverse kinematics is ever
-# requested, and configuring a solver (KDL, for instance) would mean asking a
-# 6-DOF-oriented plugin to solve a 1-DOF chain — a load-time failure risk for no
-# benefit.
+# ── Why a solver is configured at all, given the group is one prismatic joint ──
 #
-# If the gripper is ever attached to an arm and its group has to answer POSE
-# goals, add a solver here. For that case the group must span the arm too, since
-# a lone gripper joint cannot satisfy a pose request on its own.
-{}
+# The group is 1-DOF and every programmatic interface to it is JOINT-SPACE: the
+# named states in the SRDF and the GripperCommand action, which carries an
+# opening in metres rather than a pose. Strictly speaking no solver is needed for
+# those.
+#
+# But MoveIt's MotionPlanning display only creates a draggable interactive marker
+# for a group that HAS a kinematics solver: the marker's drag is turned into a
+# pose, and without a solver there is nothing to turn it into a joint value, so
+# the marker is never created and the gripper cannot be dragged in RViz at all.
+# The group then shows up in the panel but is unusable.
+#
+# So the solver exists for the graphical workflow. It is a 6-DOF solver attached
+# to a 1-DOF chain, which means pose goals are satisfied only to the extent the
+# single prismatic axis allows: dragging along the closing/opening axis works,
+# dragging in any other direction has no solution and MoveIt will say so. That is
+# the honest description of what this configuration can do.
+gripper:
+  kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+  # A prismatic joint is solved by a Newton-style iteration, so a tighter
+  # resolution and a longer timeout than the usual defaults make the drag feel
+  # responsive instead of intermittent.
+  kinematics_solver_search_resolution: 0.001
+  kinematics_solver_timeout: 0.05
+  kinematics_solver_attempts: 3

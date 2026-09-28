@@ -130,6 +130,10 @@ def generate_launch_description() -> LaunchDescription:
             .robot_description_semantic(file_path="srdf/litegrip.srdf.xacro")
             .trajectory_execution(file_path="config/moveit_controllers.yaml")
             .joint_limits(file_path="config/joint_limits.yaml")
+            # Pinned explicitly rather than relying on to_moveit_configs()'s
+            # implicit default: this file is what gives the MotionPlanning panel
+            # a draggable interactive marker at all.
+            .robot_description_kinematics(file_path="config/kinematics.yaml")
             .planning_pipelines(pipelines=["ompl"])
             .to_moveit_configs()
         )
@@ -192,7 +196,18 @@ def generate_launch_description() -> LaunchDescription:
             output="log",
             arguments=["-d", os.path.join(moveit_share, "rviz",
                                           "litegrip_moveit.rviz")],
-            parameters=[robot_description, {"use_sim_time": False}],
+            # ⚠ rviz2 needs the SEMANTIC description too, not just the URDF.
+            #
+            #   The MotionPlanning panel builds its own planning scene monitor
+            #   inside the rviz node and reads `robot_description_semantic` from
+            #   THAT node's parameters to populate the planning-group list.
+            #   Passing only `robot_description` leaves the group list empty, and
+            #   an empty group list means no interactive marker to drag — the
+            #   panel looks broken rather than under-configured.
+            #
+            #   to_dict() carries robot_description, robot_description_semantic
+            #   and the planning configs, which is what the panel expects.
+            parameters=[moveit_config.to_dict(), {"use_sim_time": False}],
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         )
 
