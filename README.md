@@ -2,15 +2,62 @@
 
 MoveIt 2 configuration for the **LiteGrip** adaptive two-finger gripper.
 
+**English** · [简体中文](README.zh-CN.md)
+
 This is the top layer of the litegrip stack:
 
 ```text
 litegrip_cpp (C++ SDK)  ->  litegrip_ros2_control  ->  litegrip_moveit_config
 ```
 
+```text
+litegrip-moveit2/
+└── litegrip_moveit_config/    the ROS 2 package, and what colcon builds
+```
+
 It holds the semantic description (SRDF), the planning and joint-limit
 configuration, the MoveIt controller mapping, and a demo launch that brings the
 whole stack up **including ros2_control**.
+
+Paths below are relative to `litegrip_moveit_config/`.
+
+## Quickstart
+
+From a clean workspace to a gripper you can plan and execute in RViz, in four
+commands. All of them run in dry run: no CAN socket is opened and no motor is
+touched.
+
+```bash
+source /opt/ros/humble/setup.bash
+colcon build --packages-select litegrip_cpp litegrip_ros2_control litegrip_moveit_config
+source install/setup.bash
+ros2 launch litegrip_moveit_config demo.launch.py
+```
+
+Run them from the root of your colcon workspace — the directory that contains all
+three packages. The launch defaults to dry run, so it is safe to run as written;
+for the difference between dry run and real hardware see [Demo](#demo).
+
+When it comes up you should see the gripper model in RViz, the MotionPlanning
+panel's planning group set to `gripper`, `gripper_controller` and
+`joint_state_broadcaster` active, and `/joint_states` publishing. To make it move,
+see [Driving the gripper from RViz](#driving-the-gripper-from-rviz).
+
+### Where to go next
+
+The MoveIt 2 tutorials, Humble edition — the distribution this stack targets:
+
+| Tutorial | Covers |
+| --- | --- |
+| [MoveIt Quickstart in RViz](https://moveit.picknik.ai/humble/doc/tutorials/quickstart_in_rviz/quickstart_in_rviz_tutorial.html) | the panel this launch opens: planning groups, planned paths, the interactive marker |
+| [MoveIt Setup Assistant](https://moveit.picknik.ai/humble/doc/examples/setup_assistant/setup_assistant_tutorial.html) | how the SRDF, joint limits and kinematics file under `config/` are produced |
+| [URDF and SRDF](https://moveit.picknik.ai/humble/doc/examples/urdf_srdf/urdf_srdf_tutorial.html) | the split behind `urdf/litegrip_moveit.urdf.xacro` and `srdf/litegrip.srdf.xacro` |
+| [Low Level Controllers](https://moveit.picknik.ai/humble/doc/examples/controller_configuration/controller_configuration_tutorial.html) | how MoveIt hands a trajectory to ros2_control — what `config/moveit_controllers.yaml` implements |
+| [Kinematics Configuration](https://moveit.picknik.ai/humble/doc/examples/kinematics_configuration/kinematics_configuration_tutorial.html) | `config/kinematics.yaml`, which is what gives RViz a draggable marker at all |
+| [Move Group C++ Interface](https://moveit.picknik.ai/humble/doc/examples/move_group_interface/move_group_interface_tutorial.html) | planning and executing from your own node instead of RViz |
+
+Full indexes: [tutorials](https://moveit.picknik.ai/humble/doc/tutorials/tutorials.html)
+and [examples](https://moveit.picknik.ai/humble/doc/examples/examples.html).
 
 ## Contents
 
