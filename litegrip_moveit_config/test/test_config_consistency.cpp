@@ -103,9 +103,9 @@ TEST(ConfigConsistency, JointVelocityMatchesTheDriverRateCeiling) {
 /// positions the URDF says exist.
 TEST(ConfigConsistency, JointPositionLimitsMatchTheModel) {
   const std::string urdf_share =
-      ament_index_cpp::get_package_share_directory("litegrip_urdf");
+      ament_index_cpp::get_package_share_directory("litegrip_description");
   const std::string urdf =
-      read_file(urdf_share + "/urdf/litegrip_urdf.urdf.xacro");
+      read_file(urdf_share + "/urdf/litegrip_description.urdf.xacro");
   const double stroke = xacro_arg_default(urdf, "stroke");
 
   const std::string moveit_share =

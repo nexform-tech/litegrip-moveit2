@@ -59,7 +59,7 @@ ros2 launch litegrip_moveit_config demo.launch.py
 
 | 路径 | 说明 |
 | --- | --- |
-| `urdf/litegrip_moveit.urdf.xacro` | 把 `litegrip_urdf` 的几何与 `litegrip_ros2_control` 的真实硬件组件组装成一份描述 |
+| `urdf/litegrip_moveit.urdf.xacro` | 把 `litegrip_description` 的几何与 `litegrip_ros2_control` 的真实硬件组件组装成一份描述 |
 | `srdf/litegrip.srdf.xacro` | SRDF 的唯一事实来源；构建时生成到 `config/litegrip.srdf` |
 | `config/joint_limits.yaml` | ⚠ 见下文「速度耦合」 |
 | `config/moveit_controllers.yaml` | 通过 GripperCommand action 驱动夹爪 |

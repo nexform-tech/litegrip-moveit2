@@ -4,7 +4,7 @@
 
   It composes two packages, and deliberately has no geometry of its own:
 
-    · litegrip_urdf (the description package) — links, joints, the two mimic
+    · litegrip_description (the description package) — links, joints, the two mimic
       fingers. Its own mock <ros2_control> block is switched OFF here, because
       this file includes the real hardware component below and two blocks
       declaring the same joint would make ros2_control refuse to load.
@@ -23,7 +23,7 @@
   <!-- ── geometry, joints and mimic fingers ─────────────────────────────── -->
   <!-- The mock block must be off: see the note above. -->
   <xacro:arg name="include_mock_ros2_control" default="false"/>
-  <xacro:include filename="$(find litegrip_urdf)/urdf/litegrip_urdf.urdf.xacro"/>
+  <xacro:include filename="$(find litegrip_description)/urdf/litegrip_description.urdf.xacro"/>
 
   <!-- ── the real hardware component ────────────────────────────────────── -->
   <!-- Every deployment parameter (channel, the dual switch, the rate ceiling,
