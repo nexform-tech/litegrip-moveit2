@@ -63,7 +63,7 @@ and [examples](https://moveit.picknik.ai/humble/doc/examples/examples.html).
 
 | Path | |
 |---|---|
-| `urdf/litegrip_moveit.urdf.xacro` | composes the geometry from `litegrip_urdf` with the real hardware component from `litegrip_ros2_control` |
+| `urdf/litegrip_moveit.urdf.xacro` | composes the geometry from `litegrip_description` with the real hardware component from `litegrip_ros2_control` |
 | `srdf/litegrip.srdf.xacro` | source of truth for the SRDF; generated into `config/litegrip.srdf` at build time |
 | `config/joint_limits.yaml` | ⚠ see "velocity coupling" below |
 | `config/moveit_controllers.yaml` | drives the gripper through a GripperCommand action |

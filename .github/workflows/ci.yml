@@ -7,7 +7,7 @@ name: CI
 # well-formedness, launch files compiling, the SRDF expanding, and the
 # repository standards holding. Two further checks need the sibling packages
 # and are not wired up yet -- expanding urdf/litegrip_moveit.urdf.xacro, which
-# composes litegrip_urdf with litegrip_ros2_control, and the
+# composes litegrip_description with litegrip_ros2_control, and the
 # test_config_consistency gtest, which reads their installed share
 # directories. They are named here rather than left out, so that the gap is
 # visible and does not read as coverage.
