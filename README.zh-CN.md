@@ -102,7 +102,7 @@ ros2 launch litegrip_moveit_config demo.launch.py \
 | --- | --- |
 | **拖动交互式标记** | 可行，`config/kinematics.yaml` 就是为此存在的 —— 但只有沿开合轴的分量可解，因为 1 自由度链无法满足任意 6 自由度位姿。横向拖动会解不出 IK，这是预期行为 |
 | **Joints 标签页** | `gripper_opening_joint` 一个滑条；精确，且永远可解 |
-| **用命名状态 Plan / Execute** | `open`（0.087 m）与 `closed`（0.0 m），行程的两端 |
+| **用命名状态 Plan / Execute** | `open`（0.085452 m）与 `closed`（0.0 m），行程的两端 |
 
 以下两处配置必须同时正确，上述任何一项才会出现，而且两者都**静默失败**：
 
