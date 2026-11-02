@@ -4,12 +4,17 @@
 // run. The values are not hard-coded on either side: the test recomputes the
 // relation from the two files, so changing either one alone turns the suite red.
 
+#include <array>
 #include <cmath>
+#include <cstdio>
 #include <fstream>
 #include <regex>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
+
+#include <sys/wait.h>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <gtest/gtest.h>
@@ -22,6 +27,20 @@ std::string read_file(const std::string &path) {
   std::ostringstream buffer;
   buffer << input.rdbuf();
   return buffer.str();
+}
+
+/// Run a command and return its combined output and process status.
+std::pair<std::string, int> run_command(const std::string &command) {
+  std::string output;
+  int status = -1;
+  if (FILE *pipe = popen(command.c_str(), "r")) {
+    std::array<char, 4096> buffer{};
+    while (std::fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
+      output += buffer.data();
+    }
+    status = pclose(pipe);
+  }
+  return {output, status};
 }
 
 /// The default of a xacro arg, e.g. `<xacro:arg name="litegrip_rad_to_mm"
@@ -122,6 +141,42 @@ TEST(ConfigConsistency, JointPositionLimitsMatchTheModel) {
   EXPECT_NEAR(max_position, 2.0 * stroke, 1e-9)
       << "joint_limits.yaml max_position disagrees with the model's "
       << "2 * stroke (" << 2.0 * stroke << " m)";
+}
+
+/// The hardware component's clamp must move with the model, not with a second
+/// default that merely starts out equal.
+///
+/// `litegrip_max_width` is what width_to_rad() clamps commands into. The model's
+/// travel is 2 x stroke, and `stroke:=` is a documented override, so a mismatch
+/// silently makes the driver truncate or reject positions the URDF declares.
+/// The composition derives the value; expanding it here checks the result
+/// rather than the expression that produced it.
+TEST(ConfigConsistency, HardwareClampFollowsTheModelStroke) {
+  const std::string moveit_share =
+      ament_index_cpp::get_package_share_directory("litegrip_moveit_config");
+  const std::string composition =
+      moveit_share + "/urdf/litegrip_moveit.urdf.xacro";
+
+  struct Case {
+    const char *stroke;
+    double expected_max_width;
+  };
+  for (const Case &c : {Case{"0.042726", 0.085452}, Case{"0.05", 0.1}}) {
+    const std::string command =
+        "xacro '" + composition + "' stroke:=" + c.stroke + " 2>&1";
+    const std::pair<std::string, int> result = run_command(command);
+    ASSERT_EQ(WEXITSTATUS(result.second), 0)
+        << "xacro failed to expand the composition:\n" << result.first;
+
+    const std::regex pattern(
+        "<param name=\"max_width\">([0-9.eE+-]+)</param>");
+    std::smatch match;
+    ASSERT_TRUE(std::regex_search(result.first, match, pattern))
+        << "no max_width parameter in the expanded composition";
+    EXPECT_NEAR(std::stod(match[1].str()), c.expected_max_width, 1e-9)
+        << "stroke:=" << c.stroke
+        << " must set the hardware clamp to 2 x stroke";
+  }
 }
 
 /// The SRDF must describe a robot with the same name as the URDF, or MoveIt
