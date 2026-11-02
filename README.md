@@ -112,7 +112,7 @@ move the gripper, in increasing order of how well they suit a gripper:
 |---|---|
 | **Drag the interactive marker** | works, and is what `config/kinematics.yaml` exists for — but only the component along the opening axis is solvable, since a 1-DOF chain cannot satisfy an arbitrary 6-DOF pose. Dragging sideways will fail to find an IK solution, which is expected |
 | **Joints tab** | a slider for `gripper_opening_joint`; exact and always solvable |
-| **Plan / Execute with a named state** | `open` (0.087 m) and `closed` (0.0 m), the two ends of travel |
+| **Plan / Execute with a named state** | `open` (0.085452 m) and `closed` (0.0 m), the two ends of travel |
 
 Two configuration details both have to be right for any of this to appear, and
 both fail *silently*:

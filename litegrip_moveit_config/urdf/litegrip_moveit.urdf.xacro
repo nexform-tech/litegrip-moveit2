@@ -25,6 +25,15 @@
   <xacro:arg name="include_mock_ros2_control" default="false"/>
   <xacro:include filename="$(find litegrip_description)/urdf/litegrip_description.urdf.xacro"/>
 
+  <!-- ── keep the hardware clamp on the model's travel ───────────────────── -->
+  <!-- The component clamps commands to its model-layer opening range. That
+       range is exactly the master joint's travel, 2 x the per-finger stroke,
+       so derive it here rather than relying on the two defaults happening to
+       agree: a stroke:= override then reaches the hardware component too.
+       An explicit litegrip_max_width:= still wins. -->
+  <xacro:property name="model_stroke" value="$(arg stroke)"/>
+  <xacro:arg name="litegrip_max_width" default="${2.0 * float(model_stroke)}"/>
+
   <!-- ── the real hardware component ────────────────────────────────────── -->
   <!-- Every deployment parameter (channel, the dual switch, the rate ceiling,
        the torque budget, the safety baseline, the calibration) is passed

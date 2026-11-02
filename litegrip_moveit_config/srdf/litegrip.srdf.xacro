@@ -13,8 +13,10 @@
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="litegrip">
 
-  <!-- Finger travel for one finger, m; the master joint spans twice this. -->
-  <xacro:arg name="stroke" default="0.0435"/>
+  <!-- Finger travel for one finger, m; the master joint spans twice this.
+       Keep the default equal to litegrip_description's measured stroke; the
+       mesh's theoretical 0.0435 is not what a real unit reaches. -->
+  <xacro:arg name="stroke" default="0.042726"/>
   <xacro:property name="stroke_arg" value="$(arg stroke)"/>
 
   <!-- ══════════════════════════════════════════════════════════════════════

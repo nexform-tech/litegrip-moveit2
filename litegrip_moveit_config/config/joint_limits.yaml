@@ -50,9 +50,13 @@ joint_limits:
     has_acceleration_limits: true
     max_acceleration: 0.5
 
+    # The master joint spans the gap between the finger faces, so its upper
+    # limit is twice one finger's travel. The description's measured stroke
+    # default is 0.042726 m, which makes this 0.085452 m. The coupling test
+    # compares the two files, so change them together.
     has_position_limits: true
     min_position: 0.0
-    max_position: 0.087
+    max_position: 0.085452
 
     # ★ No effort limit on purpose. The joint is a virtual prismatic joint, and
     #   there is no defensible way to turn the motor's N.m torque budget into a
